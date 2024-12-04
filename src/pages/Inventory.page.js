@@ -32,4 +32,18 @@ export class InventoryPage extends BaseSwagLabPage {
     async getAllNames() {
         return this.namesElements.allTextContents();
     }
+
+    // const pricesBeforeSort = await app.inventory.getAllPrices();
+
+    // async expectedSortedResuls() {
+    //     const expectedSortedResultHilo = pricesBeforeSort
+    //         .map((price) => {
+    //             const priceWithoutDollar = price.slice(1);
+    //             return Number(priceWithoutDollar);
+    //         })
+    //         .sort((a, b) => b - a)
+    //         .map((price) => `$${price}`);
+    //     return expectedSortedResultHilo;
+    // }
+
 }
