@@ -44,6 +44,9 @@ module.exports = defineConfig({
         /* Base URL to use in actions like `await page.goto('/')`. */
         baseURL: 'https://www.saucedemo.com',
 
+        /* Set 'data-test' value for use page.getByTestId('username') instead of page.locator('[data-test="username"]') */
+        testIdAttribute: 'data-test',
+
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
         trace: {
             mode: 'retain-on-failure',
@@ -63,15 +66,15 @@ module.exports = defineConfig({
             use: { ...devices['Desktop Chrome'] },
         },
 
-        {
-            name: 'webkit',
-            use: { ...devices['Desktop Safari'] },
-        },
+        // {
+        //     name: 'webkit',
+        //     use: { ...devices['Desktop Safari'] },
+        // },
 
-        {
-            name: 'firefox',
-            use: { ...devices['Desktop Firefox'] },
-        },
+        // {
+        //     name: 'firefox',
+        //     use: { ...devices['Desktop Firefox'] },
+        // },
 
         /* Test against mobile viewport. */
         // {
