@@ -95,8 +95,8 @@ test.describe('Saucedemo app basic tests', () => {
         // sort all names -> sorted array of names -> expectedSortedResults
         // const expectedSortedResultAz = [...namesBeforeSort].sort();
         // const expectedSortedResultZa = [...namesBeforeSort].sort((a, b) => b.localeCompare(a));
-        const expectedSortedResultAz = [...namesBeforeSort].sort();
-        const expectedSortedResultZa = [...namesBeforeSort].sort((a, b) => b.localeCompare(a));
+        const expectedSortedResultAz = getExpectedSortedNames(namesBeforeSort, 'az');
+        const expectedSortedResultZa = getExpectedSortedNames(namesBeforeSort, 'za');
 
         // perform sort by clicking on page (az)
         await app.inventory.sortItems(sortOptions.az);
