@@ -14,8 +14,9 @@ const sortOptions = {
 test.beforeEach(async (
     /** @type {{ app: import('../pages/Application').Application }} */{ app },
 ) => {
-    await app.login.navigate();
-    await app.login.performLogin('standard_user', 'secret_sauce');
+    // await app.login.navigate();
+    // await app.login.performLogin('standard_user', 'secret_sauce');
+    await app.login.loginAsStandardUser();
     });
 
 test.describe('Saucedemo app basic tests', () => {
@@ -124,7 +125,8 @@ test.describe('Saucedemo app basic tests', () => {
 
         // generate three unique indexes
         const randomIndexes = new Set();
-        while (randomIndexes.size < 3) {
+        const uniqueIndexesCount = Math.min(3, productCount);
+        while (randomIndexes.size < uniqueIndexesCount) {
             const randomIndex = Math.floor(Math.random() * productCount);
             randomIndexes.add(randomIndex);
         }
@@ -134,9 +136,9 @@ test.describe('Saucedemo app basic tests', () => {
 
         for (const index of randomIndexes) {
             const product = products.nth(index);
-            const name = await product.locator('[data-test="inventory-item-name"]').textContent();
-            const description = await product.locator('[data-test="inventory-item-desc"]').textContent();
-            const price = await product.locator('[data-test="inventory-item-price"]').textContent();
+            const name = await product.getByTestId('inventory-item-name').textContent();
+            const description = await product.getByTestId('inventory-item-desc').textContent();
+            const price = await product.getByTestId('inventory-item-price').textContent();
 
             // add product to cart
             const addToCartButton = product.locator('[data-test^="add-to-cart"]');
@@ -157,13 +159,13 @@ test.describe('Saucedemo app basic tests', () => {
         for (let i = 0; i < selectedProducts.length; i++) {
             const cartItem = cartItems.nth(i);
 
-            const cartName = await cartItem.locator('[data-test="inventory-item-name"]').textContent();
-            const cartDescription = await cartItem.locator('[data-test="inventory-item-desc"]').textContent();
-            const cartPrice = await cartItem.locator('[data-test="inventory-item-price"]').textContent();
+            const cartName = await cartItem.getByTestId('inventory-item-name').textContent();
+            const cartDescription = await cartItem.getByTestId('inventory-item-desc').textContent();
+            const cartPrice = await cartItem.getByTestId('inventory-item-price').textContent();
 
             expect(cartName).toBe(selectedProducts[i].name);
             expect(cartDescription).toBe(selectedProducts[i].description);
             expect(cartPrice).toBe(selectedProducts[i].price);
         }
-    })
+    });
 });
