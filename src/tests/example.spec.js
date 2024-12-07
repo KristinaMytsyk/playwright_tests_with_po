@@ -13,9 +13,7 @@ const sortOptions = {
 
 test.beforeEach(async (
     /** @type {{ app: import('../pages/Application').Application }} */{ app },
-) => {
-    // await app.login.navigate();
-    // await app.login.performLogin('standard_user', 'secret_sauce');
+    ) => {
     await app.login.loginAsStandardUser();
     });
 
@@ -23,9 +21,6 @@ test.describe('Saucedemo app basic tests', () => {
     test('should login successfully', async (
         /** @type {{ app: import('../pages/Application').Application }} */{ app },
     ) => {
-        // await app.login.navigate();
-        // await app.login.performLogin('standard_user', 'secret_sauce');
-
         await expect(app.inventory.headerTitle).toBeVisible();
 
         expect(await app.inventory.inventoryItems.count()).toBeGreaterThanOrEqual(1);
@@ -34,8 +29,6 @@ test.describe('Saucedemo app basic tests', () => {
     test('should add and remove product from the cart', async (
         /** @type {{ app: import('../pages/Application').Application }} */{ app },
     ) => {
-        // await app.login.navigate();
-        // await app.login.performLogin('standard_user', 'secret_sauce');
         await app.inventory.addItemToCartById(0);
         expect(await app.inventory.getNumberOfItemsInCart()).toBe('1');
 
@@ -49,9 +42,6 @@ test.describe('Saucedemo app basic tests', () => {
     test('perform and verify sorting on the Inventory page', async (
         /** @type {{ app: import('../pages/Application').Application }} */{ app},
     ) => {
-        // await app.login.navigate();
-        // await app.login.performLogin('standard_user', 'secret_sauce');
-
         // get all prices -> array of price
         const pricesBeforeSort = await app.inventory.getAllPrices();
 
