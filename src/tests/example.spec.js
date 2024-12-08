@@ -2,7 +2,7 @@
 /* eslint-disable playwright/expect-expect */
 import { expect } from '@playwright/test';
 import { test } from '../fixtures/base';
-import { getExpectedSortedPrices, getExpectedSortedNames } from '../helper';
+import { getExpectedSortedPrices, getExpectedSortedNames, getUniqueIndexes, calculateTotalPrice } from '../helper';
 
 const sortOptions = {
     hilo: 'hilo',
@@ -159,7 +159,6 @@ test.describe('Saucedemo app basic tests', () => {
         }
     });
 
-    
     test('check info about several added random products and Total Price on the "Checkout: Overview" page', async (
         /** @type {{ app: import('../pages/Application').Application }} */{ app },
     ) => {
@@ -168,42 +167,25 @@ test.describe('Saucedemo app basic tests', () => {
         const productCount = await products.count();
 
         // generate three unique indexes
-        const randomIndexes = new Set();
-        const uniqueIndexesCount = Math.min(3, productCount);
-        while (randomIndexes.size < uniqueIndexesCount) {
-            const randomIndex = Math.floor(Math.random() * productCount);
-            randomIndexes.add(randomIndex);
-        }
+        const randomIndexes = getUniqueIndexes(productCount);
+        // const randomIndexes = new Set();
+        // const uniqueIndexesCount = Math.min(3, productCount);
+        // while (randomIndexes.size < uniqueIndexesCount) {
+        //     const randomIndex = Math.floor(Math.random() * productCount);
+        //     randomIndexes.add(randomIndex);
+        // }
 
         // store information about selected products
-        const selectedProducts = [];
-
-        for (const index of randomIndexes) {
-            const product = products.nth(index);
-            const name = await product.getByTestId('inventory-item-name').textContent();
-            const description = await product.getByTestId('inventory-item-desc').textContent();
-            const price = await product.getByTestId('inventory-item-price').textContent();
-
-            // add product to cart
-            const addToCartButton = product.locator('[data-test^="add-to-cart"]');
-            await addToCartButton.click();
-
-            // store product data
-            selectedProducts.push({ name, description, price });
-        }
+        const selectedProducts = await app.inventory.addedItemToCartInfoByIndex(randomIndexes);
 
         // go to the shopping cart
-        await app.inventory.shoppingCart.click();
+        await app.inventory.shoppingCartClick();
 
         // Checkout: Add Information
-        await app.shoppingCart.checkoutButton.click();
+        await app.shoppingCart.checkoutButtonClick();
 
         // filling out the form
-        await app.checkoutStepOne.firstName.fill('Kristina');
-        await app.checkoutStepOne.lastName.fill('Mytsyk');
-        await app.checkoutStepOne.postalCode.fill('49094');
-
-        await app.checkoutStepOne.continueButton.click();
+        await app.checkoutStepOne.fillingOutFormWithUserData();
 
         // check every product on the "Checkout: Overview" page
         const checkoutItems = await app.checkoutStepTwo.cartItems;
@@ -236,24 +218,19 @@ test.describe('Saucedemo app basic tests', () => {
             expectedItemTotal += number;
         };
 
-        let tax = 0.08;
-        let expectedTaxAmount = (expectedItemTotal * tax).toFixed(2);
-        let numberExpectedTaxAmount = Number(expectedTaxAmount);
-
-        let expectedTotalPrice = (expectedItemTotal + numberExpectedTaxAmount).toFixed(2);
-
-        expectedItemTotal = `Item total: $${expectedItemTotal}`;
-        expectedTaxAmount = `Tax: $${expectedTaxAmount}`;
-        expectedTotalPrice = `Total: $${expectedTotalPrice}`;
+        const expectedAmounts = calculateTotalPrice(expectedItemTotal);
 
         // get the actual ItemTotal, TaxAmount, TotalPrice
-        const actualItemTotal = await app.checkoutStepTwo.itemTotal.textContent();
-        const actualTaxAmount = await app.checkoutStepTwo.taxAmount.textContent();
-        const actualTotalPrice = await app.checkoutStepTwo.totalPrice.textContent();
+        await expect(app.checkoutStepTwo.itemTotal).toHaveText(expectedAmounts.expectedItemTotal);
+        await expect(app.checkoutStepTwo.taxAmount).toHaveText(expectedAmounts.expectedTaxAmount)
+        await expect(app.checkoutStepTwo.totalPrice).toHaveText(expectedAmounts.expectedTotalPrice)
+        // const actualItemTotal = await app.checkoutStepTwo.itemTotal.textContent();
+        // const actualTaxAmount = await app.checkoutStepTwo.taxAmount.textContent();
+        // const actualTotalPrice = await app.checkoutStepTwo.totalPrice.textContent();
 
         // check the actual values of ItemTotal, TaxAmount, TotalPrice
-        expect(actualItemTotal).toEqual(expectedItemTotal);
-        expect(actualTaxAmount).toEqual(expectedTaxAmount);
-        expect(actualTotalPrice).toEqual(expectedTotalPrice);
+        // expect(actualItemTotal).toEqual(expectedItemTotal);
+        // expect(actualTaxAmount).toEqual(expectedTaxAmount);
+        // expect(actualTotalPrice).toEqual(expectedTotalPrice);
     })
 });
