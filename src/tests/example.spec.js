@@ -2,7 +2,7 @@
 /* eslint-disable playwright/expect-expect */
 import { expect } from '@playwright/test';
 import { test } from '../fixtures/base';
-import { getExpectedSortedPrices, getExpectedSortedNames, getUniqueIndexes, calculateTotalPrice } from '../helper';
+import { getExpectedSortedPrices, getExpectedSortedNames, getUniqueIndexes, calculateTotalPrice, parsePrices, calculateItemTotal } from '../helper';
 
 const sortOptions = {
     hilo: 'hilo',
@@ -176,13 +176,13 @@ test.describe('Saucedemo app basic tests', () => {
         // }
 
         // store information about selected products
-        const selectedProducts = await app.inventory.addedItemToCartInfoByIndex(randomIndexes);
+        const selectedProducts = await app.inventory.getSelectedProductsInfo(randomIndexes);
 
         // go to the shopping cart
-        await app.inventory.shoppingCartClick();
+        await app.inventory.openShoppingCart();
 
         // Checkout: Add Information
-        await app.shoppingCart.checkoutButtonClick();
+        await app.shoppingCart.openCheckout();
 
         // filling out the form
         await app.checkoutStepOne.fillingOutFormWithUserData();
@@ -206,18 +206,15 @@ test.describe('Saucedemo app basic tests', () => {
         // get all prices
         const allPrices = await app.checkoutStepTwo.getAllPrices();
 
-        const numbersAllPrices = allPrices
-            .map((price) => {
-                const priceWithoutDollar = price.slice(1);
-                return Number(priceWithoutDollar);
-            });
+        // const numbersAllPrices = parsePrices(allPrices);
 
         // calculate the expected ItemTotal, TaxAmount, TotalPrice
-        let expectedItemTotal = 0;
-        for (let number of numbersAllPrices) {
-            expectedItemTotal += number;
-        };
+        // let expectedItemTotal = 0;
+        // for (let number of numbersAllPrices) {
+        //     expectedItemTotal += number;
+        // };
 
+        const expectedItemTotal = calculateItemTotal(allPrices)
         const expectedAmounts = calculateTotalPrice(expectedItemTotal);
 
         // get the actual ItemTotal, TaxAmount, TotalPrice

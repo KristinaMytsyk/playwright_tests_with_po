@@ -35,11 +35,11 @@ export class InventoryPage extends BaseSwagLabPage {
         return this.namesElements.allTextContents();
     }
 
-    async shoppingCartClick() {
+    async openShoppingCart() {
         await this.shoppingCart.click();
     }
 
-    async addedItemToCartInfoByIndex(randomIndexes) {
+    async getSelectedProductsInfo(randomIndexes) {
         const selectedProducts = [];
 
         for (const index of randomIndexes) {

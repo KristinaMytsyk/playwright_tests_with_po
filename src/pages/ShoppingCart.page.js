@@ -27,7 +27,7 @@ export class ShoppingCartPage extends BaseSwagLabPage {
         await this.cartItems.nth(id).locator(this.removeItemSelector).click();
     }
 
-    async checkoutButtonClick() {
+    async openCheckout() {
         await this.checkoutButton.click();
     }
 }

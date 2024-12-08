@@ -46,3 +46,21 @@ export function calculateTotalPrice(expectedItemTotal) {
         expectedTotalPrice,
     };
 }
+
+// helper for price parsing
+export function parsePrices(allPrices) {
+    return allPrices.map((price) => {
+        const priceWithoutDollar = price.slice(1);
+        return Number(priceWithoutDollar);
+    });
+}
+
+// helper for calculating item total
+export function calculateItemTotal(allPrices) {
+    const numbersAllPrices = parsePrices(allPrices);
+    let expectedItemTotal = 0;
+        for (let number of numbersAllPrices) {
+            expectedItemTotal += number;
+        };
+    return expectedItemTotal;
+}
