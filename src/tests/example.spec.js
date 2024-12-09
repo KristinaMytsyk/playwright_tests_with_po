@@ -2,7 +2,7 @@
 /* eslint-disable playwright/expect-expect */
 import { expect } from '@playwright/test';
 import { test } from '../fixtures/base';
-import { getExpectedSortedPrices, getExpectedSortedNames } from '../helper';
+import { getExpectedSortedPrices, getExpectedSortedNames, getUniqueIndexes, calculateTotalPrice, parsePrices, calculateItemTotal } from '../helper';
 
 const sortOptions = {
     hilo: 'hilo',
@@ -158,4 +158,76 @@ test.describe('Saucedemo app basic tests', () => {
             expect(cartPrice).toBe(selectedProducts[i].price);
         }
     });
+
+    test('check info about several added random products and Total Price on the "Checkout: Overview" page', async (
+        /** @type {{ app: import('../pages/Application').Application }} */{ app },
+    ) => {
+        // get all the elements of the products
+        const products = await app.inventory.product;
+        const productCount = await products.count();
+
+        // generate three unique indexes
+        const randomIndexes = getUniqueIndexes(productCount);
+        // const randomIndexes = new Set();
+        // const uniqueIndexesCount = Math.min(3, productCount);
+        // while (randomIndexes.size < uniqueIndexesCount) {
+        //     const randomIndex = Math.floor(Math.random() * productCount);
+        //     randomIndexes.add(randomIndex);
+        // }
+
+        // store information about selected products
+        const selectedProducts = await app.inventory.getSelectedProductsInfo(randomIndexes);
+
+        // go to the shopping cart
+        await app.inventory.openShoppingCart();
+
+        // Checkout: Add Information
+        await app.shoppingCart.openCheckout();
+
+        // filling out the form
+        await app.checkoutStepOne.fillingOutFormWithUserData();
+
+        // check every product on the "Checkout: Overview" page
+        const checkoutItems = await app.checkoutStepTwo.cartItems;
+
+        for (let i = 0; i < selectedProducts.length; i++) {
+            const checkoutItem = checkoutItems.nth(i);
+
+            const checkoutName = await checkoutItem.getByTestId('inventory-item-name').textContent();
+            const checkoutDescription = await checkoutItem.getByTestId('inventory-item-desc').textContent();
+            const checkoutPrice = await checkoutItem.getByTestId('inventory-item-price').textContent();
+
+            expect(checkoutName).toBe(selectedProducts[i].name);
+            expect(checkoutDescription).toBe(selectedProducts[i].description);
+            expect(checkoutPrice).toBe(selectedProducts[i].price);
+        }
+
+        // verify calculated Total Price
+        // get all prices
+        const allPrices = await app.checkoutStepTwo.getAllPrices();
+
+        // const numbersAllPrices = parsePrices(allPrices);
+
+        // calculate the expected ItemTotal, TaxAmount, TotalPrice
+        // let expectedItemTotal = 0;
+        // for (let number of numbersAllPrices) {
+        //     expectedItemTotal += number;
+        // };
+
+        const expectedItemTotal = calculateItemTotal(allPrices)
+        const expectedAmounts = calculateTotalPrice(expectedItemTotal);
+
+        // get the actual ItemTotal, TaxAmount, TotalPrice
+        await expect(app.checkoutStepTwo.itemTotal).toHaveText(expectedAmounts.expectedItemTotal);
+        await expect(app.checkoutStepTwo.taxAmount).toHaveText(expectedAmounts.expectedTaxAmount)
+        await expect(app.checkoutStepTwo.totalPrice).toHaveText(expectedAmounts.expectedTotalPrice)
+        // const actualItemTotal = await app.checkoutStepTwo.itemTotal.textContent();
+        // const actualTaxAmount = await app.checkoutStepTwo.taxAmount.textContent();
+        // const actualTotalPrice = await app.checkoutStepTwo.totalPrice.textContent();
+
+        // check the actual values of ItemTotal, TaxAmount, TotalPrice
+        // expect(actualItemTotal).toEqual(expectedItemTotal);
+        // expect(actualTaxAmount).toEqual(expectedTaxAmount);
+        // expect(actualTotalPrice).toEqual(expectedTotalPrice);
+    })
 });
